@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 namespace EscolaProject.DATA.Models
 {
@@ -22,12 +23,22 @@ namespace EscolaProject.DATA.Models
         public virtual DbSet<Materia> Materia { get; set; }
         public virtual DbSet<Notas> Notas { get; set; }
 
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=Witer;Initial Catalog=escola;Integrated Security=True");
+
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+                var stringConexao = configuration.GetConnectionString("Homologacao");
+
+                optionsBuilder.UseSqlServer(stringConexao);
+
+
             }
         }
 
@@ -35,7 +46,7 @@ namespace EscolaProject.DATA.Models
         {
             modelBuilder.Entity<Aluno>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Email).IsFixedLength();
 
@@ -44,7 +55,7 @@ namespace EscolaProject.DATA.Models
 
             modelBuilder.Entity<Materia>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Descricao).IsFixedLength();
 
@@ -53,19 +64,40 @@ namespace EscolaProject.DATA.Models
 
             modelBuilder.Entity<Notas>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.ToTable("Notas");
 
-                entity.HasOne(d => d.IdNavigation)
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+                entity.HasOne(d => d.Materia)
                     .WithOne(p => p.Notas)
                     .HasForeignKey<Notas>(d => d.Id)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Notas_Aluno");
 
-                entity.HasOne(d => d.Id1)
+                entity.HasOne(d => d.Aluno)
                     .WithOne(p => p.Notas)
                     .HasForeignKey<Notas>(d => d.Id)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Notas_Materia");
+            });
+
+            modelBuilder.Entity<MateriaAluno>(entity =>
+            {
+                entity.ToTable("materia_aluno");
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                                
+                entity.HasOne(c => c.Materia)
+                    .WithMany(c => c.MateriasAlunos)
+                    .HasForeignKey(c => c.IdMateria)
+                    .HasPrincipalKey(c => c.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Aluno)
+                    .WithMany(c => c.MateriasAlunos)
+                    .HasForeignKey(c => c.IdAluno)
+                    .HasPrincipalKey(c => c.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             OnModelCreatingPartial(modelBuilder);

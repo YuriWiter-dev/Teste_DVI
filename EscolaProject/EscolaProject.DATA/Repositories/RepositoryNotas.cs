@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EscolaProject.DATA.Repositories
 {
-    internal class RepositoryNotas : RepositoryBase<Notas>, IRepositoryNotas
+    public class RepositoryNotas : RepositoryBase<Notas>, IRepositoryNotas
     {
         public RepositoryNotas(bool _SaveChanges = true) : base(_SaveChanges)
         {

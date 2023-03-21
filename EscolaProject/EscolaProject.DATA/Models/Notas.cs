@@ -8,25 +8,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EscolaProject.DATA.Models
 {
-    public partial class Notas
+    public partial class Notas : BaseModel
     {
-        [Key]
-        [Column("id")]
-        public int Id { get; set; }
         [Column("Id_aluno")]
         public int IdAluno { get; set; }
+
         [Column("id_materia")]
         public int IdMateria { get; set; }
+
         [Column("nota")]
         public int Nota { get; set; }
+
         [Column("data", TypeName = "date")]
         public DateTime Data { get; set; }
 
-        [ForeignKey("Id")]
-        [InverseProperty("Notas")]
-        public virtual Materia Id1 { get; set; }
-        [ForeignKey("Id")]
-        [InverseProperty("Notas")]
-        public virtual Aluno IdNavigation { get; set; }
+        [NotMapped]
+        public virtual Materia Materia { get; set; }
+
+        [NotMapped]
+        public virtual Aluno Aluno { get; set; }
+
+        [NotMapped]
+        public virtual List<Aluno> Alunos { get; set; }
+
+        [NotMapped]
+        public virtual List<Materia> Materias { get; set; }
     }
 }

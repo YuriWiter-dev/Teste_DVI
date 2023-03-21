@@ -1,16 +1,18 @@
 ﻿using EscolaProject.DATA.Interfaces;
 using EscolaProject.DATA.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace EscolaProject.DATA.Repositories
 {
 
-    public class RepositoryBase<T> : IRepositoryModel<T>, IDisposable where T : class
+    public class RepositoryBase<T> : IRepositoryModel<T>, IDisposable where T : BaseModel
     {
         protected escolaContext _escolaContext;
         public bool _SaveChanges = true;
@@ -55,11 +57,12 @@ namespace EscolaProject.DATA.Repositories
 
         public T Incluir(T objeto)
         {
-            _escolaContext.Set<T>().Add(objeto);
+            var obj = _escolaContext.Set<T>().Add(objeto);
             if (_SaveChanges)
             {
                 _escolaContext.SaveChanges();
             }
+            objeto.Id = obj.Entity.Id;
             return objeto;
             
         }
@@ -67,6 +70,21 @@ namespace EscolaProject.DATA.Repositories
         public void SaveChanges()
         {
             _escolaContext.SaveChanges();
+        }
+        public IQueryable<T> Buscar(Expression<Func<T, bool>> expression, string[] includes = default, bool tracking = false)
+        {
+            var query = _escolaContext.Set<T>().Where(expression);
+            if (tracking == false)
+                query = query.AsNoTracking();
+            if (includes != null)
+                foreach (var property in includes)
+                    query = query.Include(property);
+            return query;
+        }
+
+        public T SelecionarPorId(int id, string[] includes = default, bool tracking = false)
+        {
+            return Buscar(x => x.Id == id, includes, tracking).FirstOrDefault();
         }
 
         public T SelecionarPorId(params object[] variavel)
@@ -76,7 +94,7 @@ namespace EscolaProject.DATA.Repositories
 
         public List<T> SelecionarTodos()
         {
-            return _escolaContext.Set<T>().ToList();
+            return _escolaContext.Set<T>().AsNoTracking().ToList();
         }
     }
 

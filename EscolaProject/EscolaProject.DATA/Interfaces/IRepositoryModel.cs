@@ -10,7 +10,7 @@ namespace EscolaProject.DATA.Interfaces
     {
         List<T> SelecionarTodos();
         T SelecionarPorId( params object[] variavel);
-
+        T SelecionarPorId(int id, string[] includes = default, bool tracking = false);
         T Incluir(T objeto);
 
         void Excluir(T objeto);

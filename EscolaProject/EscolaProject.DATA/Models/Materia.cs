@@ -8,11 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EscolaProject.DATA.Models
 {
-    public partial class Materia
+    public partial class Materia : BaseModel
     {
-        [Key]
-        [Column("id")]
-        public int Id { get; set; }
         [Required]
         [Column("nome_materia")]
         [StringLength(10)]
@@ -22,7 +19,13 @@ namespace EscolaProject.DATA.Models
         [StringLength(10)]
         public string Descricao { get; set; }
 
-        [InverseProperty("Id1")]
+        [NotMapped]
         public virtual Notas Notas { get; set; }
+
+        [NotMapped]
+        public virtual bool Selecionada { get; set; }
+
+        [NotMapped]
+        public virtual List<MateriaAluno> MateriasAlunos { get; set; }
     }
 }
